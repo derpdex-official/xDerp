@@ -1,0 +1,171 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+import "hardhat/console.sol";
+
+interface IERC20 is IERC20Upgradeable {
+    function burn(uint256 amount) external;
+}
+
+contract xDERP is Initializable, ERC20Upgradeable {
+
+    IERC20 public Derp;
+
+    struct RedeemInfo {
+        uint256 derpAmount;
+        uint256 xDerpAmount;
+        uint256 timestamp;
+        uint256 endTime; 
+    }
+
+    mapping(address => bool) public transferWhitelist;
+    mapping(address => RedeemInfo[]) public redeems;
+    mapping(address => uint256) public pendingRedeemAmount;
+
+
+    uint256 public minRedeemRatio;
+    uint256 public maxRedeemRatio;
+    uint256 public minRedeemDuration;
+    uint256 public maxRedeemDuration;
+
+    address public admin;
+
+    error NOT_WHITELISTED();
+    error DURATION_TOO_LOW();
+    error DURATION_NOT_ENDED();
+    error ONLY_ADMIN();
+
+    event Stake(address user, uint256 amount);
+    event Redeem(address user, uint256 amount, uint256 duration, uint256 redeemIndex);
+    event FinalizeRedeem(address user, uint256 redeemIndex, uint256 derpAmount, uint256 xDerpAmount);
+    event AdminChanged(address newAdmin, address oldAdmin);
+
+    modifier onlyAdmin {
+        if(msg.sender != admin) {
+            revert ONLY_ADMIN();
+        }
+        _;
+    }
+
+    function initialize(
+        IERC20 _DERP,
+        uint256 _minRedeemRatio,
+        uint256 _maxRedeemRatio,
+        uint256 _minRedeemDuration,
+        uint256 _maxRedeemDuration,
+        address _admin
+    ) external initializer {
+        __ERC20_init("xDERP", "xDERP");
+        Derp = _DERP;
+
+        minRedeemRatio = _minRedeemRatio;
+        maxRedeemRatio = _maxRedeemRatio;
+        minRedeemDuration = _minRedeemDuration;
+        maxRedeemDuration = _maxRedeemDuration;
+
+        admin = _admin;
+
+        transferWhitelist[address(this)] = true;
+    }
+
+    function stake(uint256 amount) external {
+        Derp.transferFrom(msg.sender, address(this), amount);
+        _mint(msg.sender, amount);
+
+        emit Stake(msg.sender, amount);
+    }
+
+    function redeem(uint256 xDerpAmount, uint256 duration) external {
+        if(duration < minRedeemDuration) revert DURATION_TOO_LOW();
+
+        _transfer(msg.sender, address(this), xDerpAmount);
+
+        uint256 derpAmount = _derpByDuration(xDerpAmount, duration);
+        
+        if(duration > 0) {
+            pendingRedeemAmount[msg.sender] += xDerpAmount;
+
+            redeems[msg.sender].push(RedeemInfo({
+                derpAmount: derpAmount,
+                xDerpAmount: xDerpAmount,
+                timestamp: block.timestamp,
+                endTime: block.timestamp + duration
+            }));
+
+            emit Redeem(msg.sender, xDerpAmount, duration, redeems[msg.sender].length -1);
+        } else {
+            _finalizeRedeem(msg.sender, xDerpAmount, derpAmount);
+
+            emit Redeem(msg.sender, xDerpAmount, duration, type(uint256).max);
+            emit FinalizeRedeem(msg.sender, type(uint256).max, derpAmount, xDerpAmount);
+        }
+
+    }
+
+    function finalizeRedeem(uint256 redeemIndex) external {
+        RedeemInfo storage redeemInfo = redeems[msg.sender][redeemIndex];
+        if(redeemInfo.endTime > block.timestamp) revert DURATION_NOT_ENDED();
+
+        pendingRedeemAmount[msg.sender] -= redeemInfo.xDerpAmount;
+        _finalizeRedeem(msg.sender, redeemInfo.xDerpAmount, redeemInfo.derpAmount);
+        
+        emit FinalizeRedeem(msg.sender, redeemIndex, redeemInfo.derpAmount, redeemInfo.xDerpAmount);
+    }
+
+    
+    //ADMIN actions
+    function updateWhitelist(address to, bool value) external onlyAdmin {
+        transferWhitelist[to] = value;
+    }
+
+    function changeAdmin(address newAdmin) external onlyAdmin {
+        address oldAdmin = admin;
+        admin = newAdmin;
+
+        emit AdminChanged(newAdmin, oldAdmin);
+    }
+
+    //VIEW
+    function redeemAmount(uint256 xDerpAmount, uint256 duration) external view returns (uint256) {
+        return _derpByDuration(xDerpAmount, duration);
+    }
+
+    //internal
+    function _beforeTokenTransfer(address from, address to, uint256) internal view override {
+        if(
+            from != address(0) && to != address(0) && 
+            (!transferWhitelist[from] && !transferWhitelist[to])
+        ) {
+            revert NOT_WHITELISTED();
+        }
+    }
+
+
+    function _derpByDuration(uint256 amount, uint256 duration) internal view returns(uint256) {
+        if(duration < minRedeemDuration) {
+            return 0;
+        }
+
+        if (duration > maxRedeemDuration) {
+            return amount;
+        }
+
+        uint256 ratio = minRedeemRatio + (
+            (duration - minRedeemDuration) * (maxRedeemRatio - minRedeemRatio) /
+            (maxRedeemDuration - minRedeemDuration)
+        );
+
+        return amount * ratio / 100;
+    }
+
+    function _finalizeRedeem(address user, uint256 xDerpAmount, uint256 derpAmount) internal {
+        uint256 excess = xDerpAmount - derpAmount;
+        Derp.transfer(user, derpAmount);
+        Derp.burn(excess);
+
+        _burn(address(this), xDerpAmount);
+    }
+}
