@@ -10,6 +10,23 @@ interface IERC20 is IERC20Upgradeable {
     function burn(uint256 amount) external;
 }
 
+interface IYieldBooster {
+    function allocate(
+        address user, 
+        address pool,
+        uint256 tokenId,
+        uint256 xDerpAmount,
+        uint256 duration
+    ) external;
+
+    function deAllocate(
+        address user,
+        address pool,
+        uint256 tokenId,
+        uint256 xDerpAmount
+    ) external;
+}
+
 contract xDERP is Initializable, ERC20Upgradeable {
 
     IERC20 public Derp;
@@ -32,6 +49,10 @@ contract xDERP is Initializable, ERC20Upgradeable {
     uint256 public maxRedeemDuration;
 
     address public admin;
+    address public foundation;
+
+    //user => xDerpamount
+    mapping(address => uint256) allocations;
 
     error NOT_WHITELISTED();
     error DURATION_TOO_LOW();
@@ -56,7 +77,8 @@ contract xDERP is Initializable, ERC20Upgradeable {
         uint256 _maxRedeemRatio,
         uint256 _minRedeemDuration,
         uint256 _maxRedeemDuration,
-        address _admin
+        address _admin,
+        address _foundation
     ) external initializer {
         __ERC20_init("xDERP", "xDERP");
         Derp = _DERP;
@@ -67,6 +89,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
         maxRedeemDuration = _maxRedeemDuration;
 
         admin = _admin;
+        foundation = _foundation;
 
         transferWhitelist[address(this)] = true;
     }
@@ -78,8 +101,22 @@ contract xDERP is Initializable, ERC20Upgradeable {
         emit Stake(msg.sender, amount);
     }
 
+    function allocate(address to, address pool, uint256 tokenId, uint256 amount, uint256 duration) external {
+        _transfer(msg.sender, address(this), amount);
+        allocations[msg.sender] += amount;
+        IYieldBooster(to).allocate(msg.sender, pool, tokenId, amount, duration);
+    }
+
+    function deAllocate(address to,  address pool, uint256 tokenId, uint256 amount) external {
+        require(allocations[msg.sender] >= amount, "not enough allocation"); //TODO replace with errors
+        allocations[msg.sender] -= amount;
+        IYieldBooster(to).deAllocate(msg.sender, pool, tokenId, amount);
+    }
+
     function redeem(uint256 xDerpAmount, uint256 duration) external {
         if(duration < minRedeemDuration) revert DURATION_TOO_LOW();
+
+        require(allocations[msg.sender] <= xDerpAmount, "Deallocate");
 
         _transfer(msg.sender, address(this), xDerpAmount);
 
@@ -164,7 +201,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
     function _finalizeRedeem(address user, uint256 xDerpAmount, uint256 derpAmount) internal {
         uint256 excess = xDerpAmount - derpAmount;
         Derp.transfer(user, derpAmount);
-        Derp.burn(excess);
+        Derp.transfer(foundation, excess);
 
         _burn(address(this), xDerpAmount);
     }
