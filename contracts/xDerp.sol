@@ -66,6 +66,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
     error DURATION_TOO_LOW();
     error DURATION_NOT_ENDED();
     error ONLY_ADMIN();
+    error INVALID_ALLOCATION_AMOUNT();
 
     event Stake(address user, uint256 amount);
     event Redeem(address user, uint256 amount, uint256 duration, uint256 redeemIndex);
@@ -116,15 +117,16 @@ contract xDERP is Initializable, ERC20Upgradeable {
     }
 
     function deAllocate(address to, uint256 tokenId, uint256 amount, IYieldBooster.IncentiveKey calldata key) external {
-        require(allocations[msg.sender] >= amount, "not enough allocation"); //TODO replace with errors
+        if( allocations[msg.sender] < amount) revert INVALID_ALLOCATION_AMOUNT();
         allocations[msg.sender] -= amount;
+        _transfer(address(this), msg.sender, amount);
         IYieldBooster(to).deAllocate(msg.sender, tokenId, amount, key);
     }
 
     function redeem(uint256 xDerpAmount, uint256 duration) external {
         if(duration < minRedeemDuration) revert DURATION_TOO_LOW();
 
-        require(allocations[msg.sender] <= xDerpAmount, "Deallocate");
+        require(allocations[msg.sender] < xDerpAmount, "Deallocate");
 
         _transfer(msg.sender, address(this), xDerpAmount);
 
@@ -182,7 +184,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
     function _beforeTokenTransfer(address from, address to, uint256) internal view override {
         if(
             from != address(0) && to != address(0) && 
-            (!transferWhitelist[from] && !transferWhitelist[to])
+            (!transferWhitelist[from] && !transferWhitelist[to]) //reverts if both are not whitelisted. Allows if either is whitelisted
         ) {
             revert NOT_WHITELISTED();
         }

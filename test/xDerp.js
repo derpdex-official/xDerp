@@ -5,7 +5,7 @@ const {
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect, util } = require("chai");
 const { ethers, deployments } = require("hardhat");
-const { MaxUint256, parseEther } = require("ethers");
+const { MaxUint256, parseEther, formatEther } = require("ethers");
 
 const _minRedeemRatio = "42"
 const _maxRedeemRatio = "100"
@@ -77,8 +77,8 @@ describe("xDERP", function () {
         // const { deploy } = deployments
 
         // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount] = await ethers.getSigners();
-        const DerpFactory = await ethers.getContractFactory("ERC20")
+        const [owner, foundation, otherAccount] = await ethers.getSigners();
+        const DerpFactory = await ethers.getContractFactory("MOCKERC20")
         const derp = await DerpFactory.deploy()
         await derp.waitForDeployment()
         await derp.initialize()
@@ -99,10 +99,14 @@ describe("xDERP", function () {
             _maxRedeemRatio,
             _minRedeemDuration,
             _maxRedeemDuration,
-            owner.address
+            owner.address,
+            foundation.address,
         )
 
-        return { owner, otherAccount, xDerp, derp, currentTimestamp };
+        const YieldBoosterFactory = await ethers.getContractFactory("MockAllocator");
+        const yieldBooster = await YieldBoosterFactory.deploy();
+
+        return { owner, otherAccount, xDerp, derp, yieldBooster, currentTimestamp };
     }
 
 
@@ -124,7 +128,7 @@ describe("xDERP", function () {
             await xDerp.finalizeRedeem(0)
             const balanceAfter = await derp.balanceOf(owner.address)
 
-            expect(balanceAfter).to.be.equal(balanceBefore + (balanceBefore * BigInt(42) / BigInt(100)))
+            expect(balanceAfter).to.be.equal(balanceBefore + (amount * BigInt(42) / BigInt(100)))
         });
 
         // it('Should collect rewards correctly', async () => {
@@ -158,6 +162,33 @@ describe("xDERP", function () {
 
             await expect(xDerp.transfer(otherAccount.address, "1")).to.be.revertedWithCustomError(xDerp, "NOT_WHITELISTED")
 
+        })
+
+        it('Should allocate and deAllocate correctly', async() => {
+            const { owner, otherAccount, xDerp, derp, yieldBooster } = await loadFixture(deployFixture);
+            const amount = parseEther("100")
+            const tokenId = 1
+            const startTime = await time.latest()
+            const duration = time.duration.days(30)
+            const key = {
+                rewardToken: derp.getAddress(),
+                pool: ethers.ZeroAddress,
+                startTime: startTime,
+                endTime: startTime + time.duration.days(30),
+                refundee: otherAccount.address,
+            }
+
+            await xDerp.connect(owner).stake(amount)
+            let balanceBefore = await derp.balanceOf(owner.address)
+            await xDerp.connect(owner).allocate(yieldBooster.getAddress(), tokenId, amount, duration, key)
+            await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(balanceBefore-amount)
+
+            //Should not be able to redeem allocated funds without deallocating first
+            await expect(xDerp.connect(owner).redeem(amount, _minRedeemDuration + 1)).to.be.revertedWith("Deallocate")
+
+
+            await xDerp.connect(owner).deAllocate(yieldBooster.getAddress(), tokenId, amount, key)
+            await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(balanceBefore)
         })
     });
 
