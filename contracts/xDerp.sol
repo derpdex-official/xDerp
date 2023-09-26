@@ -11,19 +11,27 @@ interface IERC20 is IERC20Upgradeable {
 }
 
 interface IYieldBooster {
+    struct IncentiveKey {
+        address rewardToken;
+        address pool;
+        uint256 startTime;
+        uint256 endTime;
+        address refundee;
+    }
+
     function allocate(
-        address user, 
-        address pool,
+        address user,
         uint256 tokenId,
         uint256 xDerpAmount,
-        uint256 duration
+        uint256 duration,
+        IncentiveKey calldata key
     ) external;
 
     function deAllocate(
         address user,
-        address pool,
         uint256 tokenId,
-        uint256 xDerpAmount
+        uint256 xDerpAmount,
+        IncentiveKey calldata key
     ) external;
 }
 
@@ -101,16 +109,16 @@ contract xDERP is Initializable, ERC20Upgradeable {
         emit Stake(msg.sender, amount);
     }
 
-    function allocate(address to, address pool, uint256 tokenId, uint256 amount, uint256 duration) external {
+    function allocate(address to, uint256 tokenId, uint256 amount, uint256 duration, IYieldBooster.IncentiveKey calldata key) external {
         _transfer(msg.sender, address(this), amount);
         allocations[msg.sender] += amount;
-        IYieldBooster(to).allocate(msg.sender, pool, tokenId, amount, duration);
+        IYieldBooster(to).allocate(msg.sender, tokenId, amount, duration, key);
     }
 
-    function deAllocate(address to,  address pool, uint256 tokenId, uint256 amount) external {
+    function deAllocate(address to, uint256 tokenId, uint256 amount, IYieldBooster.IncentiveKey calldata key) external {
         require(allocations[msg.sender] >= amount, "not enough allocation"); //TODO replace with errors
         allocations[msg.sender] -= amount;
-        IYieldBooster(to).deAllocate(msg.sender, pool, tokenId, amount);
+        IYieldBooster(to).deAllocate(msg.sender, tokenId, amount, key);
     }
 
     function redeem(uint256 xDerpAmount, uint256 duration) external {
