@@ -167,6 +167,7 @@ describe("xDERP", function () {
         it('Should allocate and deAllocate correctly', async() => {
             const { owner, otherAccount, xDerp, derp, yieldBooster } = await loadFixture(deployFixture);
             const amount = parseEther("100")
+            const allocateAmount = amount / 2n
             const tokenId = 1
             const startTime = await time.latest()
             const duration = time.duration.days(30)
@@ -180,15 +181,21 @@ describe("xDERP", function () {
 
             await xDerp.connect(owner).stake(amount)
             let balanceBefore = await derp.balanceOf(owner.address)
-            await xDerp.connect(owner).allocate(yieldBooster.getAddress(), tokenId, amount, duration, key)
-            await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(balanceBefore-amount)
+            let xderpBalanceBefore = await xDerp.balanceOf(owner.address)
+            await xDerp.connect(owner).allocate(yieldBooster.getAddress(), tokenId, allocateAmount, duration, key)
+            await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(xderpBalanceBefore-allocateAmount)
 
             //Should not be able to redeem allocated funds without deallocating first
-            await expect(xDerp.connect(owner).redeem(amount, _minRedeemDuration + 1)).to.be.revertedWith("Deallocate")
+            await expect(xDerp.connect(owner).redeem(amount, _minRedeemDuration + 1)).to.be.revertedWith("ERC20: transfer amount exceeds balance")
+            await expect(xDerp.connect(owner).redeem((amount/2n) +1n, _minRedeemDuration + 1)).to.be.revertedWith("ERC20: transfer amount exceeds balance")
+            
+            await xDerp.connect(owner).redeem(amount/2n, _minRedeemDuration + 1)
+            await time.increase(_minRedeemDuration + 2)
+            await xDerp.connect(owner).finalizeRedeem(0)
+            await expect(await derp.balanceOf(owner.address)).to.be.equal(balanceBefore + ((amount/2n) * BigInt(42) / BigInt(100)))
 
-
-            await xDerp.connect(owner).deAllocate(yieldBooster.getAddress(), tokenId, amount, key)
-            await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(balanceBefore)
+            await xDerp.connect(owner).deAllocate(yieldBooster.getAddress(), tokenId, allocateAmount, key)
+            await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(allocateAmount)
         })
     });
 

@@ -72,6 +72,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
     event Redeem(address user, uint256 amount, uint256 duration, uint256 redeemIndex);
     event FinalizeRedeem(address user, uint256 redeemIndex, uint256 derpAmount, uint256 xDerpAmount);
     event AdminChanged(address newAdmin, address oldAdmin);
+    event ParamsUpdated(uint256 minRedeemRatio, uint256 maxRedeemRatio, uint256 minRedeemDuration, uint256 maxRedeemDuration, address foundation);
 
     modifier onlyAdmin {
         if(msg.sender != admin) {
@@ -126,8 +127,6 @@ contract xDERP is Initializable, ERC20Upgradeable {
     function redeem(uint256 xDerpAmount, uint256 duration) external {
         if(duration < minRedeemDuration) revert DURATION_TOO_LOW();
 
-        require(allocations[msg.sender] < xDerpAmount, "Deallocate");
-
         _transfer(msg.sender, address(this), xDerpAmount);
 
         uint256 derpAmount = _derpByDuration(xDerpAmount, duration);
@@ -173,6 +172,22 @@ contract xDERP is Initializable, ERC20Upgradeable {
         admin = newAdmin;
 
         emit AdminChanged(newAdmin, oldAdmin);
+    }
+
+    function setParams(
+        uint256 _minRedeemRatio,
+        uint256 _maxRedeemRatio,
+        uint256 _minRedeemDuration,
+        uint256 _maxRedeemDuration,
+        address _foundation
+    ) external onlyAdmin {
+        minRedeemRatio = _minRedeemRatio;
+        maxRedeemRatio = _maxRedeemRatio;
+        minRedeemDuration = _minRedeemDuration;
+        maxRedeemDuration = _maxRedeemDuration;
+        foundation = _foundation;
+
+        emit ParamsUpdated(_minRedeemRatio, _maxRedeemRatio, _minRedeemDuration, _maxRedeemDuration, _foundation);
     }
 
     //VIEW
