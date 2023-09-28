@@ -41,6 +41,21 @@ contract DerpAirdrop is Initializable {
         uint24 feeTier;
     }
 
+    struct UserInfo {
+        uint256 lastClaimed;
+        uint256 claimedAmount;
+    }
+
+    struct GenesisPoolInfo {
+        uint256 rewardsClaimed;
+        uint256 secondsClaimed;
+    }
+
+    //pool => tokenId => amountClaimed
+    mapping(address => mapping(uint256 => uint256) ) public genesisRewardsByPosition;
+    //pool => GenesisPoolInfo
+    mapping (address => GenesisPoolInfo) public genesisPoolInfo;
+
     uint256 public xDerpPerc; //2 decimals
 
     AirdropInfo public airdropInfo;
@@ -52,9 +67,12 @@ contract DerpAirdrop is Initializable {
     address public swapRouter;
     address public admin;
 
+    mapping(bytes32 => bool) isSaltUsed;
+
     error NOT_STARTED();
     error INVALID_SIGNATURE();
     error ONLY_ADMIN();
+    error INVALID_SALT();
 
     modifier onlyAdmin {
         if(msg.sender != admin) {
@@ -87,9 +105,11 @@ contract DerpAirdrop is Initializable {
         admin = _admin;
 
         xDerpPerc = _xDerpPerc;
+
+        Derp.approve(address(_xDerp), type(uint256).max);
     }
 
-    function claim(uint256 amount, bytes calldata signature, SwapParams calldata swapParams) external payable {
+    function claim(uint256 amount, bytes calldata signature, SwapParams calldata swapParams, bytes32 salt) external payable {
         if(msg.value > 0) {
             require(swapParams.currency == WETH && msg.value == swapParams.feeInCurrency, "AMOUNT_MISMATCH");
         } else {
@@ -100,7 +120,7 @@ contract DerpAirdrop is Initializable {
 
         if(block.timestamp < _airdropInfo.startTime) revert NOT_STARTED();
 
-        if(!_verifySignature(signature, amount, swapParams.feeInCurrency, swapParams.currency)) {
+        if(!_verifySignature(signature, amount, swapParams.feeInCurrency, swapParams.currency, salt)) {
             revert INVALID_SIGNATURE();
         }
 
@@ -115,6 +135,10 @@ contract DerpAirdrop is Initializable {
         _refund(IERC20Upgradeable(swapParams.currency));
 
         emit Claim(msg.sender, amount);
+    }
+
+    function setxDerpPerc(uint256 _xDerpPerc) external onlyAdmin {
+        xDerpPerc = _xDerpPerc;
     }
 
     function changeAdmin(address newAdmin) external onlyAdmin {
@@ -160,9 +184,18 @@ contract DerpAirdrop is Initializable {
         bytes calldata signature, 
         uint256 amount,
         uint256 feeInCurrency,
-        address currency
-    ) internal view returns (bool) {
-        bytes32 message = keccak256(abi.encodePacked(amount, feeInCurrency, currency)); //only currency is dynamic.
+        address currency,
+        bytes32 salt
+    ) internal returns (bool) {
+        if(isSaltUsed[salt]) {
+            //Salt is used in signature, so using random salt here will not work.
+            //Purpose of salt is to prevent reusing the same signature multiple times.
+            revert INVALID_SALT();
+        }
+
+        isSaltUsed[salt] = true;
+
+        bytes32 message = keccak256(abi.encodePacked(amount, feeInCurrency, currency, salt)); //only currency is dynamic.
         bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(message);
 
         return signer == ECDSAUpgradeable.recover(messageHash, signature);
