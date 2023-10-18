@@ -193,7 +193,11 @@ describe("xDERP", function () {
             await time.increase(_minRedeemDuration + 2)
             await xDerp.connect(owner).finalizeRedeem(0)
             await expect(await derp.balanceOf(owner.address)).to.be.equal(balanceBefore + ((amount/2n) * BigInt(42) / BigInt(100)))
-
+            const redeemInfo = await xDerp.redeems(owner.address, 0)
+            expect(redeemInfo[0]).to.be.equal(0)
+            expect(redeemInfo[1]).to.be.equal(0)
+            expect(redeemInfo[2]).to.be.equal(0)
+            expect(redeemInfo[3]).to.be.equal(0)
             await xDerp.connect(owner).deAllocate(yieldBooster.getAddress(), tokenId, allocateAmount, key)
             await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(allocateAmount)
         })

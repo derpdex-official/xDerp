@@ -4,8 +4,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "hardhat/console.sol";
-
 interface IERC20 is IERC20Upgradeable {
     function burn(uint256 amount) external;
 }
@@ -67,6 +65,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
     error DURATION_NOT_ENDED();
     error ONLY_ADMIN();
     error INVALID_ALLOCATION_AMOUNT();
+    error ALREADY_FINALIZED();
 
     event Stake(address user, uint256 amount);
     event Redeem(address user, uint256 amount, uint256 duration, uint256 redeemIndex);
@@ -155,10 +154,14 @@ contract xDERP is Initializable, ERC20Upgradeable {
         RedeemInfo storage redeemInfo = redeems[msg.sender][redeemIndex];
         if(redeemInfo.endTime > block.timestamp) revert DURATION_NOT_ENDED();
 
+        if(redeemInfo.xDerpAmount == 0) revert ALREADY_FINALIZED();
+
         pendingRedeemAmount[msg.sender] -= redeemInfo.xDerpAmount;
         _finalizeRedeem(msg.sender, redeemInfo.xDerpAmount, redeemInfo.derpAmount);
         
         emit FinalizeRedeem(msg.sender, redeemIndex, redeemInfo.derpAmount, redeemInfo.xDerpAmount);
+
+        delete redeems[msg.sender][redeemIndex];
     }
 
     
