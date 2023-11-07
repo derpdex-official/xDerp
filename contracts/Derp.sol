@@ -19,9 +19,4 @@ contract Derp is ERC20, AntiSnipe {
     function burn(uint256 amount) external onlyOwner {
         _burn(_msgSender(), amount);
     }
-
-    function burnFrom(address account, uint256 amount) public onlyOwner {
-        _spendAllowance(account, _msgSender(), amount);
-        _burn(account, amount);
-    }
 }
