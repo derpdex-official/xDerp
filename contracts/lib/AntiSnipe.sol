@@ -1,4 +1,4 @@
-pragma solidity ^0.8.9;
+pragma solidity 0.8.10;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AntiSnipe is Ownable {
@@ -60,6 +60,16 @@ contract AntiSnipe is Ownable {
     function blacklist(address[] calldata _targets) external onlyOwner {
         for(uint256 i=0; i< _targets.length; i++) {
             isBlacklisted[_targets[i]] = true;
+
+            if(isWhitelisted[_targets[i]]) {
+                isWhitelisted[_targets[i]] = false;
+            }
+        }
+    }
+
+    function removeBlacklist(address[] calldata _targets) external onlyOwner {
+        for(uint256 i=0; i< _targets.length; i++) {
+            isBlacklisted[_targets[i]] = false;
         }
     }
     
