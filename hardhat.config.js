@@ -32,6 +32,16 @@ module.exports = {
       url: `https://opbnb-mainnet-rpc.bnbchain.org`,
       chainId: 204,
       accounts: [process.env.deployer_priv_key],
+    },
+    ethereum: {
+      url: `https://rpc.ankr.com/eth`,
+      accounts: [process.env.deployer_priv_key],
+      chainId: 1
+    },
+    bsc: {
+      url: `https://rpc.ankr.com/bsc`,
+      accounts: [process.env.deployer_priv_key],
+      chainId: 56
     }
   },
   etherscan: {
@@ -39,7 +49,9 @@ module.exports = {
       baseGoerli: "PLACEHOLDER_STRING",
       base: process.env.ETHERSCAN_API_KEY,
       opBnbTestnet: process.env.opBNB_API_KEY,
-      opBnb: process.env.opBNB_API_KEY
+      opBnb: process.env.opBNB_API_KEY,
+      ethereum: process.env.ETHERSCAN_API_KEY,
+      bsc: process.env.BSCSCAN_API_KEY
     },
     customChains: [
       {
@@ -70,6 +82,22 @@ module.exports = {
         urls: {
           apiURL: `https://open-platform.nodereal.io/${process.env.opBNB_API_KEY}/op-bnb-mainnet/contract/`,
           browserURL: "https://opbnbscan.com"
+        }
+      },
+      {
+        network: 'ethereum',
+        chainId: 1,
+        urls: {
+          apiURL: `https://api.etherscan.io/api`,
+          browserURL: "https://etherscan.io"
+        }
+      },
+      {
+        network: 'bsc',
+        chainId: 56,
+        urls: {
+          apiURL: `https://api.bscscan.com/api`,
+          browserURL: "https://bscscan.com"
         }
       }
     ]
