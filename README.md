@@ -45,6 +45,6 @@ yarn hardhat compile && yarn hardhat run scripts/deployxDerpOpBNB.js --network o
 ## xDERP token addresses
 | Blockchain | Contract Address |
 |------------|------------------|
-| Base | [0xAD7319358D98AE5d08d9F225e7Ff32d7D269fD04](https://basescan.org/address/0xAD7319358D98AE5d08d9F225e7Ff32d7D269fD04) |
-| opBNB | [0x65A6757cb3644fb192465634F897b41C5E5621D2](https://opbnbscan.com/address/0x65A6757cb3644fb192465634F897b41C5E5621D2) |
-| ZkSync Era | [0xD9A0a601727e3Ee00730Ca21eAE55D91663bD706](https://explorer.zksync.io/address/0xD9A0a601727e3Ee00730Ca21eAE55D91663bD706) |
+| Base | [0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9](https://basescan.org/address/0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9) |
+| opBNB | [0x983BA88d66291D5a62684F1fE01FF186f97aB455](https://opbnbscan.com/address/0x983BA88d66291D5a62684F1fE01FF186f97aB455) |
+| ZkSync Era | [0x3239b2Fb367243d827fea1E460F016E15797D7ca](https://explorer.zksync.io/address/0x3239b2Fb367243d827fea1E460F016E15797D7ca) |

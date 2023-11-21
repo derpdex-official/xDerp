@@ -9,6 +9,11 @@
       "address": "0xAD7319358D98AE5d08d9F225e7Ff32d7D269fD04",
       "txHash": "0x45be89b71f9c84076a4b567281fa03d6f628841d11429bb373cc28172676c0eb",
       "kind": "transparent"
+    },
+    {
+      "address": "0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9",
+      "txHash": "0x4349a588e65975c6efaf3bff7ec2badbf3bdb66db88a80cc3dbea13ff8d4e37f",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -226,6 +231,261 @@
             "numberOfBytes": "32"
           },
           "t_struct(RedeemInfo)6309_storage": {
+            "label": "struct xDERP.RedeemInfo",
+            "members": [
+              {
+                "label": "derpAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "xDerpAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "e6273c89c49168cb6bcd37fb808f904bcde561aa5168b4d815df90cab47fc19b": {
+      "address": "0x302429888Be2e737b33caaE82FcC53536e7368f4",
+      "txHash": "0xd5fe693477ec852a7ab4f927091434a08d117409e2f94159765713e158330f36",
+      "layout": {
+        "solcVersion": "0.8.10",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_balances",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:40"
+          },
+          {
+            "label": "_allowances",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:42"
+          },
+          {
+            "label": "_totalSupply",
+            "offset": 0,
+            "slot": "53",
+            "type": "t_uint256",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:44"
+          },
+          {
+            "label": "_name",
+            "offset": 0,
+            "slot": "54",
+            "type": "t_string_storage",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:46"
+          },
+          {
+            "label": "_symbol",
+            "offset": 0,
+            "slot": "55",
+            "type": "t_string_storage",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:47"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "56",
+            "type": "t_array(t_uint256)45_storage",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:376"
+          },
+          {
+            "label": "Derp",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IERC20)1268",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:38"
+          },
+          {
+            "label": "transferWhitelist",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:47"
+          },
+          {
+            "label": "redeems",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_address,t_array(t_struct(RedeemInfo)1322_storage)dyn_storage)",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:48"
+          },
+          {
+            "label": "pendingRedeemAmount",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:49"
+          },
+          {
+            "label": "minRedeemRatio",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_uint256",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:52"
+          },
+          {
+            "label": "maxRedeemRatio",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:53"
+          },
+          {
+            "label": "minRedeemDuration",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:54"
+          },
+          {
+            "label": "maxRedeemDuration",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:55"
+          },
+          {
+            "label": "admin",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_address",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:57"
+          },
+          {
+            "label": "foundation",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_address",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:58"
+          },
+          {
+            "label": "allocations",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "xDERP",
+            "src": "contracts/xDerp.sol:61"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(RedeemInfo)1322_storage)dyn_storage": {
+            "label": "struct xDERP.RedeemInfo[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)45_storage": {
+            "label": "uint256[45]",
+            "numberOfBytes": "1440"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IERC20)1268": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_array(t_struct(RedeemInfo)1322_storage)dyn_storage)": {
+            "label": "mapping(address => struct xDERP.RedeemInfo[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(RedeemInfo)1322_storage": {
             "label": "struct xDERP.RedeemInfo",
             "members": [
               {
