@@ -4,8 +4,8 @@ const minRedeemRatio = "42"
 const maxRedeemRatio = "100"
 const minRedeemDuration = "2073600" //24 days
 const maxRedeemDuration = "8294400" //96 days
-const DerpAddress = ""
-const foundationAddress = ""
+const DerpAddress = "0xEbb78043e29F4af24E6266A7D142f5A08443969E"
+const foundationAddress = "0x6685652b82241Bc7C8002da31207929A6542D1CB"
 
 const gasPrice = 8000000
 async function main() {
