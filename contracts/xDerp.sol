@@ -66,6 +66,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
     error ONLY_ADMIN();
     error INVALID_ALLOCATION_AMOUNT();
     error ALREADY_FINALIZED();
+    error INVALID_DURATION();
 
     event Stake(address user, uint256 amount);
     event Redeem(address user, uint256 amount, uint256 duration, uint256 redeemIndex);
@@ -125,6 +126,7 @@ contract xDERP is Initializable, ERC20Upgradeable {
 
     function redeem(uint256 xDerpAmount, uint256 duration) external {
         if(duration < minRedeemDuration) revert DURATION_TOO_LOW();
+        if(duration != minRedeemDuration && duration < maxRedeemDuration) revert INVALID_DURATION();
 
         _transfer(msg.sender, address(this), xDerpAmount);
 

@@ -120,7 +120,7 @@ describe("xDERP", function () {
 
             await expect(xDerp.redeem(amount, time.duration.days(1))).to.be.revertedWithCustomError(xDerp, "DURATION_TOO_LOW")
 
-            await xDerp.redeem(amount, _minRedeemDuration + 1)
+            await xDerp.redeem(amount, _minRedeemDuration)
             await expect(xDerp.finalizeRedeem(0)).to.be.revertedWithCustomError(xDerp, "DURATION_NOT_ENDED")
 
             await time.increaseTo(await time.latest() + _minRedeemDuration + 2)
@@ -130,6 +130,25 @@ describe("xDERP", function () {
 
             expect(balanceAfter).to.be.equal(balanceBefore + (amount * BigInt(42) / BigInt(100)))
         });
+
+        it("Should revert if duration is more or less", async function () {
+            const { owner, otherAccount, xDerp, derp } = await loadFixture(deployFixture);
+            // const { derp, xDerp, owner, otherAccount } = await deployFixture()
+            const amount = parseEther("100")
+
+            await xDerp.connect(owner).stake(amount)
+            await expect(xDerp.redeem(amount, time.duration.days(1))).to.be.revertedWithCustomError(xDerp, "DURATION_TOO_LOW")
+            await expect(xDerp.redeem(amount, _minRedeemDuration -1)).to.be.revertedWithCustomError(xDerp, "DURATION_TOO_LOW")
+            await expect(xDerp.redeem(amount, _minRedeemDuration +1)).to.be.revertedWithCustomError(xDerp, "INVALID_DURATION")
+            
+            //should revert if duration is less than max
+            await expect(xDerp.redeem(amount, _maxRedeemDuration -1)).to.be.revertedWithCustomError(xDerp, "INVALID_DURATION")
+
+            //redeem after duration should work
+            await xDerp.redeem(amount, _maxRedeemDuration +1)
+
+
+        })
 
         // it('Should collect rewards correctly', async () => {
         //     const { owner, otherAccount, xDerp, derp } = await loadFixture(deployFixture);
@@ -186,10 +205,10 @@ describe("xDERP", function () {
             await expect(xDerp.connect(owner).balanceOf(owner.address)).to.eventually.equal(xderpBalanceBefore-allocateAmount)
 
             //Should not be able to redeem allocated funds without deallocating first
-            await expect(xDerp.connect(owner).redeem(amount, _minRedeemDuration + 1)).to.be.revertedWith("ERC20: transfer amount exceeds balance")
-            await expect(xDerp.connect(owner).redeem((amount/2n) +1n, _minRedeemDuration + 1)).to.be.revertedWith("ERC20: transfer amount exceeds balance")
+            await expect(xDerp.connect(owner).redeem(amount, _minRedeemDuration )).to.be.revertedWith("ERC20: transfer amount exceeds balance")
+            await expect(xDerp.connect(owner).redeem((amount/2n) +1n, _minRedeemDuration)).to.be.revertedWith("ERC20: transfer amount exceeds balance")
             
-            await xDerp.connect(owner).redeem(amount/2n, _minRedeemDuration + 1)
+            await xDerp.connect(owner).redeem(amount/2n, _minRedeemDuration)
             await time.increase(_minRedeemDuration + 2)
             await xDerp.connect(owner).finalizeRedeem(0)
             await expect(await derp.balanceOf(owner.address)).to.be.equal(balanceBefore + ((amount/2n) * BigInt(42) / BigInt(100)))
