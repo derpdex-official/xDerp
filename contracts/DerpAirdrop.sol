@@ -27,12 +27,12 @@ interface ISwapRouter {
 
 contract DerpAirdrop is Initializable {
 
-    struct AirdropInfo {
-        uint32 startTime;
-        uint32 phase1EndTime;
-        uint32 phase2EndTime;
-        // uint16 phase1FeePerc; //2 decimals // 1000 for 10%
-    }
+    // struct AirdropInfo {
+    //     uint32 startTime;
+    //     // uint32 phase1EndTime;
+    //     // uint32 phase2EndTime;
+    //     // uint16 phase1FeePerc; //2 decimals // 1000 for 10%
+    // }
 
     struct SwapParams {
         address currency;
@@ -46,19 +46,10 @@ contract DerpAirdrop is Initializable {
         uint256 claimedAmount;
     }
 
-    struct GenesisPoolInfo {
-        uint256 rewardsClaimed;
-        uint256 secondsClaimed;
-    }
+    uint256 public xDerpPerc; //2 decimals //9000 for 90%
 
-    //pool => tokenId => amountClaimed
-    mapping(address => mapping(uint256 => uint256) ) public genesisRewardsByPosition;
-    //pool => GenesisPoolInfo
-    mapping (address => GenesisPoolInfo) public genesisPoolInfo;
-
-    uint256 public xDerpPerc; //2 decimals
-
-    AirdropInfo public airdropInfo;
+    // AirdropInfo public airdropInfo;
+    uint256 public airdropStartTime;
     
     IERC20Upgradeable public Derp;
     IxDerp public xDerp;
@@ -68,6 +59,9 @@ contract DerpAirdrop is Initializable {
     address public admin;
 
     mapping(bytes32 => bool) isSaltUsed;
+    mapping(address => mapping(uint256 => UserInfo)) public userInfo;
+    mapping(address => uint256) public totalClaimed;
+    mapping(address => uint256) public count;
 
     error NOT_STARTED();
     error INVALID_SIGNATURE();
@@ -86,7 +80,7 @@ contract DerpAirdrop is Initializable {
 
 
     function initialize(
-        AirdropInfo calldata _airdropInfo,
+        uint256 _airdropStartTime,
         IERC20Upgradeable _Derp,
         IxDerp _xDerp,
         address _WETH,
@@ -95,7 +89,7 @@ contract DerpAirdrop is Initializable {
         address _admin,
         uint256 _xDerpPerc
     ) external initializer {
-        airdropInfo = _airdropInfo;
+        airdropStartTime = _airdropStartTime;
 
         xDerp = _xDerp;
         Derp = _Derp;
@@ -109,16 +103,15 @@ contract DerpAirdrop is Initializable {
         Derp.approve(address(_xDerp), type(uint256).max);
     }
 
-    function claim(uint256 amount, bytes calldata signature, SwapParams calldata swapParams, bytes32 salt) external payable {
+    ///@param amount max amount of a user for the phase
+    function claim(uint256 amount, bytes calldata signature, SwapParams calldata swapParams, bytes32 salt, uint256 phase) external payable {
         if(msg.value > 0) {
             require(swapParams.currency == WETH && msg.value == swapParams.feeInCurrency, "AMOUNT_MISMATCH");
         } else {
             IERC20Upgradeable(swapParams.currency).transferFrom(msg.sender, address(this), swapParams.feeInCurrency);
         }
 
-        AirdropInfo memory _airdropInfo = airdropInfo;
-
-        if(block.timestamp < _airdropInfo.startTime) revert NOT_STARTED();
+        if(block.timestamp < airdropStartTime) revert NOT_STARTED();
 
         if(!_verifySignature(signature, amount, swapParams.feeInCurrency, swapParams.currency, salt)) {
             revert INVALID_SIGNATURE();
@@ -126,7 +119,13 @@ contract DerpAirdrop is Initializable {
 
         _swap(swapParams);
 
-        if(block.timestamp < _airdropInfo.phase2EndTime) return _claim(amount);
+        userInfo[msg.sender][phase].lastClaimed = block.timestamp;
+        userInfo[msg.sender][phase].claimedAmount += amount;
+        totalClaimed[msg.sender] += amount;
+        count[msg.sender]++;
+
+        // if(block.timestamp < _airdropInfo.phase2EndTime) return 
+        _claim(amount);
 
         // if(block.timestamp < _airdropInfo.phase1EndTime) return _claimPhaseI(amount);
 
@@ -195,13 +194,14 @@ contract DerpAirdrop is Initializable {
 
         isSaltUsed[salt] = true;
 
-        bytes32 message = keccak256(abi.encodePacked(amount, feeInCurrency, currency, salt)); //only currency is dynamic.
+        bytes32 message = keccak256(abi.encodePacked(msg.sender, block.chainid, amount, feeInCurrency, currency, salt)); //only currency is dynamic.
         bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(message);
 
         return signer == ECDSAUpgradeable.recover(messageHash, signature);
     }
 
     function _swap(SwapParams memory swapParams) internal returns (uint256 amountOut) {
+        if(swapParams.feeInCurrency == 0) return 0;
         if(
             msg.value == 0 && 
             IERC20Upgradeable(swapParams.currency).allowance(address(this), swapRouter) < swapParams.feeInCurrency
