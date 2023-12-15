@@ -49,3 +49,9 @@ yarn hardhat compile && yarn hardhat run scripts/deployxDerpOpBNB.js --network o
 | Base | [0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9](https://basescan.org/address/0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9) |
 | opBNB | [0x983BA88d66291D5a62684F1fE01FF186f97aB455](https://opbnbscan.com/address/0x983BA88d66291D5a62684F1fE01FF186f97aB455) |
 | ZkSync Era | [0x3239b2Fb367243d827fea1E460F016E15797D7ca](https://explorer.zksync.io/address/0x3239b2Fb367243d827fea1E460F016E15797D7ca) |
+
+
+## Airdrop token addresses
+| Blockchain | Contract Address |
+|------------|------------------|
+| Base Testnet | [0xA8209b117F0799a8666c7a366AaA970d11105f47](https://goerli.basescan.org/address/0xA8209b117F0799a8666c7a366AaA970d11105f47) |
