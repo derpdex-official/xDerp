@@ -67,6 +67,7 @@ contract DerpAirdrop is Initializable {
     error INVALID_SIGNATURE();
     error ONLY_ADMIN();
     error INVALID_SALT();
+    error ALREADY_CLAIMED();
 
     modifier onlyAdmin {
         if(msg.sender != admin) {
@@ -113,25 +114,25 @@ contract DerpAirdrop is Initializable {
 
         if(block.timestamp < airdropStartTime) revert NOT_STARTED();
 
-        if(!_verifySignature(signature, amount, swapParams.feeInCurrency, swapParams.currency, salt)) {
+        if(!_verifySignature(signature, amount, swapParams.feeInCurrency, swapParams.currency, swapParams.feeTier, salt)) {
             revert INVALID_SIGNATURE();
         }
 
         _swap(swapParams);
 
+        uint256 amountAvailable = amount - userInfo[msg.sender][phase].claimedAmount;
+
+        if(amountAvailable == 0) revert ALREADY_CLAIMED();
+
         userInfo[msg.sender][phase].lastClaimed = block.timestamp;
-        userInfo[msg.sender][phase].claimedAmount += amount;
-        totalClaimed[msg.sender] += amount;
+        userInfo[msg.sender][phase].claimedAmount += amountAvailable;
+        totalClaimed[msg.sender] += amountAvailable;
         count[msg.sender]++;
 
-        // if(block.timestamp < _airdropInfo.phase2EndTime) return 
-        _claim(amount);
+        _claim(amountAvailable);
 
-        // if(block.timestamp < _airdropInfo.phase1EndTime) return _claimPhaseI(amount);
-
-        // if(block.timestamp < _airdropInfo.phase2EndTime) return _claimPhaseII(amount);
-
-        _refund(IERC20Upgradeable(swapParams.currency));
+        uint256 excess = msg.value > swapParams.feeInCurrency ? msg.value - swapParams.feeInCurrency : 0;
+        _refund(IERC20Upgradeable(swapParams.currency), excess);
 
         emit Claim(msg.sender, amount);
     }
@@ -160,16 +161,6 @@ contract DerpAirdrop is Initializable {
         }
     }
 
-    // function getFeeInDerp(uint256 amount, AirdropInfo memory _airdropInfo) internal view returns (uint256) {
-    //     if( block.timestamp > _airdropInfo.startTime &&
-    //         block.timestamp < _airdropInfo.phase1EndTime
-    //     ) {
-    //         return airdropInfo.phase1FeePerc * amount / 100_00;
-    //     }
-
-    //     return 0;
-    // }
-
     function _claim(
         uint256 amount
     ) internal {
@@ -184,6 +175,7 @@ contract DerpAirdrop is Initializable {
         uint256 amount,
         uint256 feeInCurrency,
         address currency,
+        uint24 feeTier,
         bytes32 salt
     ) internal returns (bool) {
         if(isSaltUsed[salt]) {
@@ -194,7 +186,7 @@ contract DerpAirdrop is Initializable {
 
         isSaltUsed[salt] = true;
 
-        bytes32 message = keccak256(abi.encodePacked(msg.sender, block.chainid, amount, feeInCurrency, currency, salt)); //only currency is dynamic.
+        bytes32 message = keccak256(abi.encodePacked(msg.sender, block.chainid, amount, feeInCurrency, currency, feeTier, salt));
         bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(message);
 
         return signer == ECDSAUpgradeable.recover(messageHash, signature);
@@ -226,16 +218,18 @@ contract DerpAirdrop is Initializable {
         ISwapRouter(swapRouter).refundETH();   
     }
 
-    function _refund(IERC20Upgradeable currency) internal {
-        uint256 bal = address(this).balance;
+    function _refund(IERC20Upgradeable currency, uint256 amount) internal {
+        //this case won't happen as we use exactIn
+        if(amount == 0) return;
 
-        if(bal > 0) {
-            (bool status,) = msg.sender.call{value: bal}("");
+        if(amount > 0 && address(currency) == WETH && msg.value > 0) {
+            (bool status,) = msg.sender.call{value: amount}("");
             require(status, "ETH_FAIL");
         }
 
-        uint256 tokenBalance = currency.balanceOf(address(this));
-        if (tokenBalance > 0) currency.transfer(msg.sender, tokenBalance);
+        if(amount > 0 && address(currency) != WETH) {
+            currency.transfer(msg.sender, amount);
+        }
     }
 
     receive() external payable {}
