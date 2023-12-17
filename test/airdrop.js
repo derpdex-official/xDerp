@@ -72,7 +72,6 @@ describe("Airdrop", function () {
 
         const currentTimestamp = await time.latest()
         await airdrop.initialize(
-            currentTimestamp,
             await derp.getAddress(),
             await xDerp.getAddress(),
             await currency.getAddress(), //WETH
@@ -85,6 +84,9 @@ describe("Airdrop", function () {
                 ogRewards,
                 testnetRewards,
                 blockchainRewards,
+                phase1StartTime: currentTimestamp,
+                phase2StartTime: currentTimestamp + days(2),
+                phase2EndTime: currentTimestamp + days(4),
             }
         )
 
@@ -100,7 +102,7 @@ describe("Airdrop", function () {
 
 
     const generateSignature = async (
-        signer, taskParams, userAddress, chainId, airdropAmount, feeTier, phase
+        signer, taskParams, userAddress, chainId, airdropAmount, feeTier, ETHPrice, phase2FeeAmountInETH, phase
     ) => {
         const expiry = await time.latest() + minutes(3)
 
@@ -130,8 +132,8 @@ describe("Airdrop", function () {
 
         const nonceHash = ethers.solidityPackedKeccak256(["address", "uint256", "uint256"], [userAddress, phase, chainId])
         const message = ethers.solidityPackedKeccak256(
-            ['bytes32', 'address', 'uint256', 'uint256', 'uint24', 'bytes32', 'uint256'],
-            [taskParamsSerialized, userAddress, chainId, airdropAmount, feeTier, nonceHash, expiry]
+            ['bytes32', 'address', 'uint256', 'uint256', 'uint24', 'uint256', 'uint256', 'bytes32', 'uint256'],
+            [taskParamsSerialized, userAddress, chainId, airdropAmount, feeTier, ETHPrice, phase2FeeAmountInETH, nonceHash, expiry]
         );
         // console.log(message)
         // console.log("params", [taskParamsSerialized, userAddress, chainId, airdropAmount, feeTier, nonceHash, expiry])
@@ -178,7 +180,7 @@ describe("Airdrop", function () {
             const currencyBalanceBefore = await currency.balanceOf(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,
@@ -227,7 +229,7 @@ describe("Airdrop", function () {
             }]
             const airdropAmount = taskParams.reduce((acc, curr) => acc + curr.amount, 0n)
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,
@@ -248,7 +250,7 @@ describe("Airdrop", function () {
             )).to.be.revertedWithCustomError(airdrop, "INVALID_SALT")
 
             const { signature: signature2, nonceHash: nonceHash2, amount: amount2, expiry: expiry2 } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
 
             await expect(airdrop.connect(otherAccount).claim(
@@ -290,7 +292,7 @@ describe("Airdrop", function () {
             const xDerpBalanceBefore = await xDerp.balanceOf(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,
@@ -344,7 +346,7 @@ describe("Airdrop", function () {
             const currencyBalanceBefore = await currency.balanceOf(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,
@@ -363,7 +365,7 @@ describe("Airdrop", function () {
 
             //Phase 2 
             const { signature: signature2, nonceHash: nonceHash2, amount: amount2, expiry: expiry2 } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase + 1
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase + 1
             )
             const currencyBalanceBefore2 = await currency.balanceOf(otherAccount.address)
             await airdrop.connect(otherAccount).claim(
@@ -411,7 +413,7 @@ describe("Airdrop", function () {
             const currencyBalanceBefore = await currency.balanceOf(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,
@@ -429,7 +431,7 @@ describe("Airdrop", function () {
             const airdropAmount2 = taskParams2.reduce((acc, curr) => acc + curr.amount, 0n)
 
             const { signature: signature2, nonceHash: nonceHash2, amount: amount2, expiry: expiry2 } = await generateSignature(
-                owner, taskParams2, otherAccount.address, 31337, airdropAmount2, 10000, phase + 1
+                owner, taskParams2, otherAccount.address, 31337, airdropAmount2, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase + 1
             )
 
             const currencyBalanceBefore2 = await currency.balanceOf(otherAccount.address)
@@ -476,7 +478,7 @@ describe("Airdrop", function () {
             const derpBalanceBefore = await derp.balanceOf(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,
@@ -493,7 +495,7 @@ describe("Airdrop", function () {
             expect(derpBalanceAfter).to.be.eq(derpBalanceBefore + expectedDerpAmount)
 
             const { signature: signature2, nonceHash: nonceHash2, expiry: expiry2 } = await generateSignature(
-                owner, taskParams, user3.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, user3.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
 
             await currency.connect(user3).approve(await airdrop.getAddress(), MaxUint256)
@@ -541,7 +543,7 @@ describe("Airdrop", function () {
             }]
             const airdropAmount = taskParams.reduce((acc, curr) => acc + curr.amount, 0n)
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
-                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, phase
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
             await airdrop.connect(otherAccount).claim(
                 signature,

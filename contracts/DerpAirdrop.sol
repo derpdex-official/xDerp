@@ -50,6 +50,8 @@ contract DerpAirdrop is Initializable {
 
     // AirdropInfo public airdropInfo;
     uint256 public airdropStartTime;
+    uint256 public phase2StartTime;
+    uint256 public phase2EndTime;
     
     IERC20Upgradeable public Derp;
     IxDerp public xDerp;
@@ -62,6 +64,7 @@ contract DerpAirdrop is Initializable {
     mapping(address => mapping(uint256 => UserInfo)) public userInfo;
     mapping(address => uint256) public totalClaimed;
     mapping(address => uint256) public count;
+    mapping(uint256 => uint256) public totalClaimedPerPhase;
     uint256 public ogRemaining;
     uint256 public testnetRemaining;
     uint256 public blockchainRemaining;
@@ -69,6 +72,8 @@ contract DerpAirdrop is Initializable {
     uint256 public feePerc; //2 decimals // 100 for 1%
 
     error NOT_STARTED();
+    error PHASE2_STARTED();
+    error AIRDROP_ENDED();
     error INVALID_SIGNATURE();
     error SIGNATURE_EXPIRED();
     error ONLY_ADMIN();
@@ -89,9 +94,11 @@ contract DerpAirdrop is Initializable {
         uint256 ogRewards;
         uint256 testnetRewards;
         uint256 blockchainRewards;
+        uint256 phase1StartTime;
+        uint256 phase2StartTime;
+        uint256 phase2EndTime;
     }
     function initialize(
-        uint256 _airdropStartTime,
         IERC20Upgradeable _Derp,
         IxDerp _xDerp,
         address _WETH,
@@ -102,7 +109,9 @@ contract DerpAirdrop is Initializable {
         uint256 _feePerc,
         RewardParams calldata rewardParams
     ) external initializer {
-        airdropStartTime = _airdropStartTime;
+        airdropStartTime = rewardParams.phase1StartTime;
+        phase2StartTime = rewardParams.phase2StartTime;
+        phase2EndTime = rewardParams.phase2EndTime;
 
         xDerp = _xDerp;
         Derp = _Derp;
@@ -120,7 +129,6 @@ contract DerpAirdrop is Initializable {
         Derp.approve(address(_xDerp), type(uint256).max);
     }
 
-    //TODO take input as each category and emit in event
     struct FeeParams {
         uint256 minOut;
         uint256 phase2FeeAmountInETH;
@@ -142,6 +150,8 @@ contract DerpAirdrop is Initializable {
         FeeParams calldata feeParams
     ) external payable {
         if(block.timestamp < airdropStartTime) revert NOT_STARTED();
+        if(block.timestamp >= phase2StartTime && phase != 2 ) revert PHASE2_STARTED();
+        if(block.timestamp >= phase2EndTime) revert AIRDROP_ENDED();
         if(isSaltUsed[salt]) revert INVALID_SALT();
         if(block.timestamp > expiry) revert SIGNATURE_EXPIRED();
 
@@ -153,12 +163,13 @@ contract DerpAirdrop is Initializable {
         testnetRemaining -= testnetReward;
         blockchainRemaining -= blockchainRewards;
 
-        _verifySignature(signature, totalAmount, expiry, feeParams.feeTier, salt, taskParams);
+        _verifySignature(signature, totalAmount, expiry, feeParams, salt, taskParams);
 
         userInfo[msg.sender][phase].lastClaimed = block.timestamp;
         userInfo[msg.sender][phase].claimedAmount += claimableAmount;
         totalClaimed[msg.sender] += claimableAmount;
         count[msg.sender]++;
+        totalClaimedPerPhase[phase] += claimableAmount;
 
         _claim(claimableAmount);
 
@@ -288,13 +299,17 @@ contract DerpAirdrop is Initializable {
         bytes calldata signature, 
         uint256 totalAmount,
         uint256 expiry,
-        uint24 feeTier,
+        FeeParams calldata feeParams,
         bytes32 salt,
         TaskParams[] calldata taskParams
     ) internal view {
 
         bytes32 taskParamsSerialized = serializeTaskParams(taskParams);
-        bytes32 message = keccak256(abi.encodePacked(taskParamsSerialized, msg.sender, block.chainid, totalAmount, feeTier, salt, expiry));
+        bytes32 message = keccak256(
+            abi.encodePacked(
+                taskParamsSerialized, msg.sender, block.chainid, totalAmount, feeParams.feeTier, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, salt, expiry
+                )
+            );
         bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(message);
 
         if (signer != ECDSAUpgradeable.recover(messageHash, signature)) revert INVALID_SIGNATURE();
