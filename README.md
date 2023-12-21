@@ -54,4 +54,4 @@ yarn hardhat compile && yarn hardhat run scripts/deployxDerpOpBNB.js --network o
 ## Airdrop token addresses
 | Blockchain | Contract Address |
 |------------|------------------|
-| Base Testnet | [0xA8209b117F0799a8666c7a366AaA970d11105f47](https://goerli.basescan.org/address/0xA8209b117F0799a8666c7a366AaA970d11105f47) |
+| Base Testnet | [0x829Cb36e63E4c8d2a5FDdA53af15A2283737dBe9](https://goerli.basescan.org/address/0x829Cb36e63E4c8d2a5FDdA53af15A2283737dBe9) |

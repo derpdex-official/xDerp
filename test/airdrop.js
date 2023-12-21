@@ -363,6 +363,7 @@ describe("Airdrop", function () {
             expect(currencyBalanceAfter).to.be.equal(currencyBalanceBefore - expectedFee)
 
 
+            await time.increaseTo(await airdrop.phase2StartTime())
             //Phase 2 
             const { signature: signature2, nonceHash: nonceHash2, amount: amount2, expiry: expiry2 } = await generateSignature(
                 owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase + 1
@@ -424,6 +425,7 @@ describe("Airdrop", function () {
                 feeParams,
             )
 
+            await time.increaseTo(await airdrop.phase2StartTime())
             const taskParams2 = [{
                 taskId: 10, //different task id for phase2
                 amount: ethers.parseEther("1"),
@@ -449,7 +451,7 @@ describe("Airdrop", function () {
         })
         it("Should claim FCFS correctly", async () => {
             const { owner, otherAccount, user3, xDerp, derp, airdrop, currency } = await loadFixture(deployFixture);
-            const phase = 0
+            const phase = 1
             const ETHPriceUSD = ethers.parseEther("2000")
             const FIVE_USD_IN_ETH = ethers.parseEther("5") * ethers.parseEther("1") / ETHPriceUSD
             const feeParams = {

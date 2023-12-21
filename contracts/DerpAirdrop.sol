@@ -74,8 +74,9 @@ contract DerpAirdrop is Initializable {
     error NOT_STARTED();
     error PHASE2_STARTED();
     error AIRDROP_ENDED();
+    error PHASE_MISMATCH();
     error INVALID_SIGNATURE();
-    error SIGNATURE_EXPIRED();
+    error SIGNATURE_EXPIRED(); 
     error ONLY_ADMIN();
     error INVALID_SALT();
     error ALREADY_CLAIMED();
@@ -150,6 +151,7 @@ contract DerpAirdrop is Initializable {
         FeeParams calldata feeParams
     ) external payable {
         if(block.timestamp < airdropStartTime) revert NOT_STARTED();
+        if(block.timestamp < phase2StartTime && phase != 1) revert PHASE_MISMATCH();
         if(block.timestamp >= phase2StartTime && phase != 2 ) revert PHASE2_STARTED();
         if(block.timestamp >= phase2EndTime) revert AIRDROP_ENDED();
         if(isSaltUsed[salt]) revert INVALID_SALT();
