@@ -70,6 +70,7 @@ contract DerpAirdrop is Initializable {
     uint256 public blockchainRemaining;
     uint256 constant public price = 100000000000; //18 decimals
     uint256 public feePerc; //2 decimals // 100 for 1%
+    uint256 public maxCapInUSD; //max fee paid by the user in USD //18 decimals
 
     error NOT_STARTED();
     error PHASE2_STARTED();
@@ -108,6 +109,7 @@ contract DerpAirdrop is Initializable {
         address _admin,
         uint256 _xDerpPerc,
         uint256 _feePerc,
+        uint256 _maxCapInUSD,
         RewardParams calldata rewardParams
     ) external initializer {
         airdropStartTime = rewardParams.phase1StartTime;
@@ -121,6 +123,7 @@ contract DerpAirdrop is Initializable {
         swapRouter = _swapRouter;
         admin = _admin;
         feePerc = _feePerc;
+        maxCapInUSD = _maxCapInUSD;
         ogRemaining = rewardParams.ogRewards;
         testnetRemaining = rewardParams.testnetRewards;
         blockchainRemaining = rewardParams.blockchainRewards;
@@ -258,6 +261,9 @@ contract DerpAirdrop is Initializable {
     ) public view returns (uint256 feeInETH) {
         uint256 feeInDerp = airdropAmount * feePerc / 100_00; //1 percent of airdrop amount
         feeInETH = feeInDerp * price / ETHPriceUSD;
+
+        uint256 feeInUSD = feeInETH * ETHPriceUSD / 1e18;
+        if(feeInUSD > maxCapInUSD) feeInETH = maxCapInUSD * 1e18 / ETHPriceUSD;
     }
 
     function setxDerpPerc(uint256 _xDerpPerc) external onlyAdmin {
