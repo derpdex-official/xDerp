@@ -176,16 +176,12 @@ contract DerpAirdrop is Initializable {
         _claim(claimableAmount);
 
         uint256 feeInETH = phase == 1 ? getETHAmount(claimableAmount, feeParams.ETHPriceUSD): feeParams.phase2FeeAmountInETH;
-        if(msg.value > 0) {
-            require(msg.value >= feeInETH, "AMOUNT_MISMATCH");
-        } else {
-            IERC20Upgradeable(WETH).transferFrom(msg.sender, address(this), feeInETH);
-        }
+        require(msg.value >= feeInETH, "AMOUNT_MISMATCH");
 
         _swap(SwapParams(WETH, feeInETH, feeParams.minOut, feeParams.feeTier));
 
         uint256 excess = msg.value > feeInETH ? msg.value - feeInETH : 0;
-        _refund(IERC20Upgradeable(WETH), excess);
+        _refund(excess);
 
         _logEvents(taskParams, phase, ogRewards, testnetReward, blockchainRewards, msg.sender);
     }
@@ -329,12 +325,6 @@ contract DerpAirdrop is Initializable {
 
     function _swap(SwapParams memory swapParams) internal returns (uint256 amountOut) {
         if(swapParams.feeInCurrency == 0) return 0;
-        if(
-            msg.value == 0 && 
-            IERC20Upgradeable(swapParams.currency).allowance(address(this), swapRouter) < swapParams.feeInCurrency
-        ) {
-            IERC20Upgradeable(swapParams.currency).approve(swapRouter, type(uint256).max);
-        }
         
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
             tokenIn: swapParams.currency,
@@ -353,16 +343,12 @@ contract DerpAirdrop is Initializable {
         ISwapRouter(swapRouter).refundETH();   
     }
 
-    function _refund(IERC20Upgradeable currency, uint256 amount) internal {
+    function _refund(uint256 amount) internal {
         if(amount == 0) return;
 
-        if(amount > 0 && address(currency) == WETH && msg.value > 0) {
+        if(msg.value > 0) {
             (bool status,) = msg.sender.call{value: amount}("");
             require(status, "ETH_FAIL");
-        }
-
-        if(amount > 0 && address(currency) != WETH) {
-            currency.transfer(msg.sender, amount);
         }
     }
 

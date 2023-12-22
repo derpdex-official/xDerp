@@ -95,8 +95,8 @@ describe("Airdrop", function () {
 
         await xDerp.updateWhitelist(await airdrop.getAddress(), true)
 
-        await currency.connect(otherAccount).mint(parseEther("100"))
-        await currency.connect(otherAccount).approve(await airdrop.getAddress(), MaxUint256)
+        // await currency.connect(otherAccount).mint(parseEther("100"))
+        // await currency.connect(otherAccount).approve(await airdrop.getAddress(), MaxUint256)
         return { owner, otherAccount, user3, xDerp, derp, airdrop, currency };
     }
 
@@ -177,11 +177,13 @@ describe("Airdrop", function () {
 
             const derpBalanceBefore = await derp.balanceOf(otherAccount.address)
             const xDerpBalanceBefore = await xDerp.balanceOf(otherAccount.address)
-            const currencyBalanceBefore = await currency.balanceOf(otherAccount.address)
+            // const currencyBalanceBefore = await currency.balanceOf(otherAccount.address)
+            const currencyBalanceBefore = await ethers.provider.getBalance(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
                 owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
+            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
             await airdrop.connect(otherAccount).claim(
                 signature,
                 expiry,
@@ -189,18 +191,21 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: expectedFee
+                }
             )
 
             const derpBalanceAfter = await derp.balanceOf(otherAccount.address)
             const xDerpBalanceAfter = await xDerp.balanceOf(otherAccount.address)
-            const currencyBalanceAfter = await currency.balanceOf(otherAccount.address)
+            // const currencyBalanceAfter = await currency.balanceOf(otherAccount.address)
+            const currencyBalanceAfter = await ethers.provider.getBalance(otherAccount.address)
             const expectedxDerpAmount = airdropAmount * (xDERPPerc) / (10000n)
             const expectedDerpAmount = airdropAmount - expectedxDerpAmount
-            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
             console.log("expectedFee", expectedFee.toString())
             expect(xDerpBalanceAfter).to.be.equal(xDerpBalanceBefore + expectedxDerpAmount)
             expect(derpBalanceAfter).to.be.equal(derpBalanceBefore + expectedDerpAmount)
-            expect(currencyBalanceAfter).to.be.equal(currencyBalanceBefore - expectedFee)
+            expect(currencyBalanceAfter).to.be.closeTo(currencyBalanceBefore - expectedFee, parseEther("0.01"))
 
         });
 
@@ -231,6 +236,7 @@ describe("Airdrop", function () {
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
                 owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
+            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
             await airdrop.connect(otherAccount).claim(
                 signature,
                 expiry,
@@ -238,6 +244,9 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: expectedFee
+                }
             )
 
             await expect(airdrop.connect(otherAccount).claim(
@@ -247,6 +256,9 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: expectedFee
+                }
             )).to.be.revertedWithCustomError(airdrop, "INVALID_SALT")
 
             const { signature: signature2, nonceHash: nonceHash2, amount: amount2, expiry: expiry2 } = await generateSignature(
@@ -260,6 +272,9 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: expectedFee
+                }
             )).to.be.revertedWithCustomError(airdrop, "INVALID_SALT")
         })
 
@@ -294,6 +309,8 @@ describe("Airdrop", function () {
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
                 owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
+            const currencyBalanceBefore = await ethers.provider.getBalance(otherAccount.address)
+            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
             await airdrop.connect(otherAccount).claim(
                 signature,
                 expiry,
@@ -304,6 +321,7 @@ describe("Airdrop", function () {
                 value: ethers.parseEther("1")
             }
             )
+            const currencyBalanceAfter = await ethers.provider.getBalance(otherAccount.address)
 
             const derpBalanceAfter = await derp.balanceOf(otherAccount.address)
             const xDerpBalanceAfter = await xDerp.balanceOf(otherAccount.address)
@@ -312,6 +330,7 @@ describe("Airdrop", function () {
             const expectedDerpAmount = airdropAmount - expectedxDerpAmount
             expect(xDerpBalanceAfter).to.be.equal(xDerpBalanceBefore + expectedxDerpAmount)
             expect(derpBalanceAfter).to.be.equal(derpBalanceBefore + expectedDerpAmount)
+            expect(currencyBalanceAfter).to.be.closeTo(currencyBalanceBefore - expectedFee, parseEther("0.01"))
         })
 
 
@@ -326,7 +345,7 @@ describe("Airdrop", function () {
                 ETHPriceUSD: ETHPriceUSD,
                 feeTier: "10000",
             }
-            
+
 
             const taskParams = [{
                 taskId: 1,
@@ -343,24 +362,26 @@ describe("Airdrop", function () {
             }]
             const airdropAmount = taskParams.reduce((acc, curr) => acc + curr.amount, 0n)
 
-            const currencyBalanceBefore = await currency.balanceOf(otherAccount.address)
+            const currencyBalanceBefore = await ethers.provider.getBalance(otherAccount.address)
 
             const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
                 owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
             )
+            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
             await airdrop.connect(otherAccount).claim(
                 signature,
                 expiry,
                 phase,
                 nonceHash,
                 taskParams,
-                feeParams,
+                feeParams, {
+                value: expectedFee
+            }
             )
-            const currencyBalanceAfter = await currency.balanceOf(otherAccount.address)
+            const currencyBalanceAfter = await ethers.provider.getBalance(otherAccount.address)
 
-            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
-            console.log("expectedFee", expectedFee.toString())
-            expect(currencyBalanceAfter).to.be.equal(currencyBalanceBefore - expectedFee)
+
+            expect(currencyBalanceAfter).to.be.closeTo(currencyBalanceBefore - expectedFee, parseEther("0.01"))
 
 
             await time.increaseTo(await airdrop.phase2StartTime())
@@ -368,19 +389,22 @@ describe("Airdrop", function () {
             const { signature: signature2, nonceHash: nonceHash2, amount: amount2, expiry: expiry2 } = await generateSignature(
                 owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase + 1
             )
-            const currencyBalanceBefore2 = await currency.balanceOf(otherAccount.address)
-            await airdrop.connect(otherAccount).claim(
+            const currencyBalanceBefore2 = await ethers.provider.getBalance(otherAccount.address)
+            let tx = await airdrop.connect(otherAccount).claim(
                 signature2,
                 expiry2,
                 phase + 1,
                 nonceHash2,
                 taskParams,
                 feeParams,
+                {
+                    value: ethers.parseEther("1")
+                }
             )
-            const currencyBalanceAfter2 = await currency.balanceOf(otherAccount.address)
+            const currencyBalanceAfter2 = await ethers.provider.getBalance(otherAccount.address)
 
             console.log("FIVE_USD_IN_ETH", FIVE_USD_IN_ETH)
-            expect(currencyBalanceAfter2).to.be.eq(currencyBalanceBefore2 - FIVE_USD_IN_ETH)
+            expect(currencyBalanceAfter2).to.be.closeTo(currencyBalanceBefore2 - FIVE_USD_IN_ETH, parseEther("0.01"))
 
         })
 
@@ -423,6 +447,9 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: parseEther("1")
+                }
             )
 
             await time.increaseTo(await airdrop.phase2StartTime())
@@ -436,7 +463,7 @@ describe("Airdrop", function () {
                 owner, taskParams2, otherAccount.address, 31337, airdropAmount2, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase + 1
             )
 
-            const currencyBalanceBefore2 = await currency.balanceOf(otherAccount.address)
+            const currencyBalanceBefore2 = await ethers.provider.getBalance(otherAccount.address)
             await airdrop.connect(otherAccount).claim(
                 signature2,
                 expiry2,
@@ -444,9 +471,12 @@ describe("Airdrop", function () {
                 nonceHash2,
                 taskParams2,
                 feeParams,
+                {
+                    value: parseEther("1")
+                }
             )
-            const currencyBalanceAfter2 = await currency.balanceOf(otherAccount.address)
-            expect(currencyBalanceAfter2).to.be.eq(currencyBalanceBefore2 - feeParams.phase2FeeAmountInETH)
+            const currencyBalanceAfter2 = await ethers.provider.getBalance(otherAccount.address)
+            expect(currencyBalanceAfter2).to.be.closeTo(currencyBalanceBefore2 - feeParams.phase2FeeAmountInETH, parseEther("0.01"))
 
         })
         it("Should claim FCFS correctly", async () => {
@@ -489,6 +519,9 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: parseEther("1")
+                }
             )
 
             const derpBalanceAfter = await derp.balanceOf(otherAccount.address)
@@ -510,6 +543,9 @@ describe("Airdrop", function () {
                 nonceHash2,
                 taskParams,
                 feeParams,
+                {
+                    value: parseEther("1")
+                }
             )
             const derpBalanceAfter2 = await derp.balanceOf(user3.address)
             //Should not claim OG + testnet rewards as it is already claimed by otherAccount
@@ -554,6 +590,9 @@ describe("Airdrop", function () {
                 nonceHash,
                 taskParams,
                 feeParams,
+                {
+                    value: ethers.parseEther("1")
+                }
             )
 
             // const { signature: signature2, nonceHash: nonceHash2 } = await generateSignature(
