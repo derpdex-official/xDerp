@@ -12,10 +12,11 @@ const _minRedeemRatio = "42"
 const _maxRedeemRatio = "100"
 const _minRedeemDuration = time.duration.days(24)
 const _maxRedeemDuration = time.duration.days(96)
-const _totalRewards = ethers.parseEther("100")
+const _totalRewards = ethers.parseEther("10000000000")
 const durationInSeconds = time.duration.days(30)
 const xDERPPerc = 9000n //90% Xderp // 2 decimals
 const derpFeePerc = 100n //1%
+const maxCapInUSD = ethers.parseEther("1") //1 usd
 const ogRewards = ethers.parseEther("10")
 const testnetRewards = ethers.parseEther("10")
 const blockchainRewards = ethers.parseEther("10")
@@ -80,6 +81,7 @@ describe("Airdrop", function () {
             owner.address,
             xDERPPerc,
             derpFeePerc,
+            maxCapInUSD,
             {
                 ogRewards,
                 testnetRewards,
@@ -208,6 +210,52 @@ describe("Airdrop", function () {
             expect(currencyBalanceAfter).to.be.closeTo(currencyBalanceBefore - expectedFee, parseEther("0.01"))
 
         });
+
+        it("Fee should not exceed maxCapInUSD", async function () {
+            const { owner, otherAccount, xDerp, derp, airdrop, currency } = await loadFixture(deployFixture);
+            const phase = 1
+            const feeParams = {
+                minOut: "0",
+                phase2FeeAmountInETH: "0",
+                ETHPriceUSD: ethers.parseEther("200000"),
+                feeTier: "10000",
+            }
+
+            const taskParams = [{
+                taskId: 1,
+                amount: ethers.parseEther("1"),
+            }, {
+                taskId: 2,
+                amount: ethers.parseEther("1"),
+            }, {
+                taskId: 3,
+                amount: ethers.parseEther("1"),
+            }, {
+                taskId: 3,
+                amount: parseEther("5000000000"),
+            }]
+            const airdropAmount = taskParams.reduce((acc, curr) => acc + curr.amount, 0n)
+            const { signature, nonceHash, amount, chainId, expiry } = await generateSignature(
+                owner, taskParams, otherAccount.address, 31337, airdropAmount, 10000, feeParams.ETHPriceUSD, feeParams.phase2FeeAmountInETH, phase
+            )
+            const expectedFee = await airdrop.getETHAmount(airdropAmount, feeParams.ETHPriceUSD)
+            expect(expectedFee).to.be.eq(parseEther(maxCapInUSD.toString()) / feeParams.ETHPriceUSD)
+            const currencyBalanceBefore = await ethers.provider.getBalance(otherAccount.address)
+            await airdrop.connect(otherAccount).claim(
+                signature,
+                expiry,
+                phase,
+                nonceHash,
+                taskParams,
+                feeParams,
+                {
+                    value: expectedFee
+                }
+            )
+
+            const currencyBalanceAfter = await ethers.provider.getBalance(otherAccount.address)
+            expect(currencyBalanceAfter).to.be.closeTo(currencyBalanceBefore - expectedFee, parseEther("0.01"))
+        })
 
         it("should not claim more", async () => {
             const { owner, otherAccount, xDerp, derp, airdrop, currency } = await loadFixture(deployFixture);
