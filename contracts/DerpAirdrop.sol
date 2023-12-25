@@ -270,6 +270,10 @@ contract DerpAirdrop is Initializable {
         xDerpPerc = _xDerpPerc;
     }
 
+    function setMaxCapUSD(uint256 _maxCapInUSD) external onlyAdmin {
+        maxCapInUSD = _maxCapInUSD;
+    }
+
     function changeAdmin(address newAdmin) external onlyAdmin {
         address oldAdmin = admin;
         admin = newAdmin;
