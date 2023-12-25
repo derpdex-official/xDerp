@@ -1,20 +1,20 @@
 const hre = require("hardhat");
 
-const startTime = "1701407784"
-const DerpAddress = "0xac465de4d7Fbdc2e3c33f303147298200357CbFE"
-const xDerpAddress = "0x93B569efC1487a3CA0b4F52d0762b81018E3ab49"
+const DerpAddress = "0xEbb78043e29F4af24E6266A7D142f5A08443969E"
+const xDerpAddress = "0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9"
 const WETHAddress = "0x4200000000000000000000000000000000000006"
-const signer = "0xd20D67FCA86160810733431174608fBC4b33127A"
-const swapRouter = "0xD16a32F1A8d2c6C9203A85Bf28AF8F94d84dF346"
+const signer = ""
+const swapRouter = "0xC9fdf5CE4C657ed8289A7D9D1107Ea7D55dbd53F"
 const xDerpPerc = "9000" //90%
 const feePerc = "100" //1% 
+const maxCapInUSD = hre.ethers.parseEther("") // 1 USD //max fee to be charged
 const rewardParams = {
-    ogRewards: hre.ethers.parseEther("100"),
-    testnetRewards: ethers.parseEther("100"),
-    blockchainRewards: ethers.parseEther("100"),
-    phase1StartTime: "1703152767",
-    phase2StartTime: "1703325567",
-    phase2EndTime: "1703498367",
+    ogRewards: hre.ethers.parseEther(""),
+    testnetRewards: ethers.parseEther(""),
+    blockchainRewards: ethers.parseEther(""),
+    phase1StartTime: "",
+    phase2StartTime: "",
+    phase2EndTime: "",
 }
 
 const gasPrice = 8000000
@@ -33,6 +33,7 @@ async function main() {
         deployer.address,
         xDerpPerc,
         feePerc,
+        maxCapInUSD,
         rewardParams
     ], {
         gasPrice
