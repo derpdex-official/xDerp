@@ -60,6 +60,9 @@ async function main() {
     const proxyAddress = await proxy.getAddress();
     console.log("DerpAirdrop Proxy deployed to:", proxyAddress);
 
+    const xDerpContract = await ethers.getContractAt("xDERP", xDerpAddress);
+    await xDerpContract.updateWhitelist(proxyAddress, true, { gasPrice });
+
     console.log(`\n Verifying \n`)
     //verify
     await run("verify:verify", {
