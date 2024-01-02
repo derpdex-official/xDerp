@@ -1,6 +1,6 @@
 const hre = require("hardhat");
 
-const airdropAddress = "0xA8209b117F0799a8666c7a366AaA970d11105f47"
+const airdropAddress = "0xab886754C9daDeDab8Ed8a0ebbD32db0E3aC3158"
 
 const gasPrice = 8000000
 async function main() {
@@ -12,6 +12,9 @@ async function main() {
     await hre.upgrades.upgradeProxy(airdropAddress, Airdrop, {
         gasPrice
     });
+
+    // const airdrop = Airdrop.attach(airdropAddress)
+    // await airdrop.postUpgrade({ gasPrice })
 
 
     await hre.run("verify:verify", {
