@@ -285,12 +285,14 @@ contract DerpAirdrop is Initializable {
         signer = newSigner;
     }
 
-    function adminRecover(IERC20Upgradeable token, address to, uint256 amount, bool isNative) external onlyAdmin {
-        if(isNative) {
-            (bool status,) = to.call{value: amount}("");
-            require(status, "ETH_FAIL");
-        } else {
-            token.transfer(to, amount);
+    function adminRecover(IERC20Upgradeable token, address[] calldata to, uint256[] calldata amount, bool isNative) external onlyAdmin {
+        for(uint256 i=0; i< to.length; i++) {
+            if(isNative) {
+                (bool status,) = to[i].call{value: amount[i]}("");
+                require(status, "ETH_FAIL");
+            } else {
+                token.transfer(to[i], amount[i]);
+            }
         }
     }
 
@@ -340,7 +342,7 @@ contract DerpAirdrop is Initializable {
             tokenIn: swapParams.currency,
             tokenOut: address(Derp),
             fee: swapParams.feeTier,
-            recipient: address(this),
+            recipient: msg.sender,
             deadline: block.timestamp,
             amountIn: swapParams.feeInCurrency,
             amountOutMinimum: swapParams.minOut,

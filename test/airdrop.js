@@ -669,36 +669,39 @@ describe("Airdrop", function () {
             const nativeBalanceInContract = await ethers.provider.getBalance(await airdrop.getAddress())
 
             const adminDerpBalanceBefore = await derp.balanceOf(owner.address)
+            const otherAccountDerpBalanceBefore = await derp.balanceOf(owner.address)
             const adminCurrencyBalanceBefore = await currency.balanceOf(owner.address)
             const adminNativeBalanceBefore = await ethers.provider.getBalance(owner.address)
 
             await airdrop.connect(owner).adminRecover(
                 await currency.getAddress(),
-                owner.address,
-                currencyBalanceInContract,
+                [owner.address],
+                [currencyBalanceInContract],
                 false
             )
 
             await airdrop.connect(owner).adminRecover(
                 await derp.getAddress(),
-                owner.address,
-                derpBalanceInContract,
+                [owner.address, otherAccount.address],
+                [derpBalanceInContract/2n, derpBalanceInContract/2n],
                 false
             )
 
             await airdrop.connect(owner).adminRecover(
                 await currency.getAddress(),
-                owner.address,
-                nativeBalanceInContract,
+                [owner.address],
+                [nativeBalanceInContract],
                 true
             )
 
             const adminDerpBalanceAfter = await derp.balanceOf(owner.address)
+            const otherAccountDerpBalanceAfter = await derp.balanceOf(owner.address)
             const adminCurrencyBalanceAfter = await currency.balanceOf(owner.address)
             const adminNativeBalanceAfter = await ethers.provider.getBalance(owner.address)
 
-            expect(adminDerpBalanceAfter).to.be.equal(adminDerpBalanceBefore + derpBalanceInContract)
-            expect(adminCurrencyBalanceAfter).to.be.equal(adminCurrencyBalanceBefore + currencyBalanceInContract)
+            expect(adminDerpBalanceAfter).to.be.equal(adminDerpBalanceBefore + (derpBalanceInContract/2n))
+            expect(otherAccountDerpBalanceAfter).to.be.equal(otherAccountDerpBalanceBefore + (derpBalanceInContract/2n))
+            expect(adminCurrencyBalanceAfter).to.be.equal(adminCurrencyBalanceBefore + (currencyBalanceInContract))
             // expect(adminNativeBalanceAfter).to.be.equal(adminNativeBalanceBefore + nativeBalanceInContract)
 
             const derpBalanceInContractAfter = await derp.balanceOf(await airdrop.getAddress())
