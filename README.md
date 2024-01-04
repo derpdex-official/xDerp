@@ -55,3 +55,6 @@ yarn hardhat compile && yarn hardhat run scripts/deployxDerpOpBNB.js --network o
 | Blockchain | Contract Address |
 |------------|------------------|
 | Base Testnet | [0x829Cb36e63E4c8d2a5FDdA53af15A2283737dBe9](https://goerli.basescan.org/address/0x829Cb36e63E4c8d2a5FDdA53af15A2283737dBe9) |
+| opBNB | [0x7F481823893ca8B1171eBB99A98B17996660c3Fa](https://opbnbscan.com/address/0x7F481823893ca8B1171eBB99A98B17996660c3Fa) |
+| Base | [0xab886754C9daDeDab8Ed8a0ebbD32db0E3aC3158](https://basescan.org/address/0xab886754C9daDeDab8Ed8a0ebbD32db0E3aC3158) |
+| ZkSync Era | [0x8f7Da9C713eA31b73c31776241f0b56261BD7956](https://explorer.zksync.io/address/0x8f7Da9C713eA31b73c31776241f0b56261BD7956) |

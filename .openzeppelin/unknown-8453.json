@@ -14,6 +14,11 @@
       "address": "0x85Fb47a24aFEC3CBA80D439B8Cb108121De333d9",
       "txHash": "0x4349a588e65975c6efaf3bff7ec2badbf3bdb66db88a80cc3dbea13ff8d4e37f",
       "kind": "transparent"
+    },
+    {
+      "address": "0xab886754C9daDeDab8Ed8a0ebbD32db0E3aC3158",
+      "txHash": "0xac2261d699dc7f758d1a952cdbad2eccd37d2312a41e9d722c43cefc91550ae5",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -514,6 +519,516 @@
               }
             ],
             "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "a52df035f1f4458113fe38aa32879fb41c6788ab8c8b6c46f897888a619337b4": {
+      "address": "0xC331575d6Ee88883b2515B4767e37fD74d3962e8",
+      "txHash": "0xee2216542827c5b937a8e7427c363b028d75a565e725f98039193f7af8774db0",
+      "layout": {
+        "solcVersion": "0.8.10",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "xDerpPerc",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:49"
+          },
+          {
+            "label": "airdropStartTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:52"
+          },
+          {
+            "label": "phase2StartTime",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:53"
+          },
+          {
+            "label": "phase2EndTime",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:54"
+          },
+          {
+            "label": "Derp",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_contract(IERC20Upgradeable)858",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:56"
+          },
+          {
+            "label": "xDerp",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_contract(IxDerp)4116",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:57"
+          },
+          {
+            "label": "WETH",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:58"
+          },
+          {
+            "label": "signer",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:59"
+          },
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:60"
+          },
+          {
+            "label": "admin",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:61"
+          },
+          {
+            "label": "isSaltUsed",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:63"
+          },
+          {
+            "label": "userInfo",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(UserInfo)4161_storage))",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:64"
+          },
+          {
+            "label": "totalClaimed",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:65"
+          },
+          {
+            "label": "count",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:66"
+          },
+          {
+            "label": "totalClaimedPerPhase",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:67"
+          },
+          {
+            "label": "ogRemaining",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:68"
+          },
+          {
+            "label": "testnetRemaining",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:69"
+          },
+          {
+            "label": "blockchainRemaining",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:70"
+          },
+          {
+            "label": "feePerc",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:72"
+          },
+          {
+            "label": "maxCapInUSD",
+            "offset": 0,
+            "slot": "20",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:73"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20Upgradeable)858": {
+            "label": "contract IERC20Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IxDerp)4116": {
+            "label": "contract IxDerp",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(UserInfo)4161_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct DerpAirdrop.UserInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(UserInfo)4161_storage)": {
+            "label": "mapping(uint256 => struct DerpAirdrop.UserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(UserInfo)4161_storage": {
+            "label": "struct DerpAirdrop.UserInfo",
+            "members": [
+              {
+                "label": "lastClaimed",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "claimedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "99b82591b12de46d7457dca57d2a796aefe2d13e3b4277ecbacfa0153586ab16": {
+      "address": "0x85f18414Ba9D678990EB906E391A938d53f444fB",
+      "txHash": "0xa28c9280a02ca8b90f75979cfe8ded5fc7a3b577a8c40268868b14f057bc4835",
+      "layout": {
+        "solcVersion": "0.8.10",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "xDerpPerc",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:49"
+          },
+          {
+            "label": "airdropStartTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:52"
+          },
+          {
+            "label": "phase2StartTime",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:53"
+          },
+          {
+            "label": "phase2EndTime",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:54"
+          },
+          {
+            "label": "Derp",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_contract(IERC20Upgradeable)246",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:56"
+          },
+          {
+            "label": "xDerp",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_contract(IxDerp)2155",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:57"
+          },
+          {
+            "label": "WETH",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:58"
+          },
+          {
+            "label": "signer",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:59"
+          },
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:60"
+          },
+          {
+            "label": "admin",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_address",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:61"
+          },
+          {
+            "label": "isSaltUsed",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:63"
+          },
+          {
+            "label": "userInfo",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(UserInfo)2200_storage))",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:64"
+          },
+          {
+            "label": "totalClaimed",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:65"
+          },
+          {
+            "label": "count",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:66"
+          },
+          {
+            "label": "totalClaimedPerPhase",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:67"
+          },
+          {
+            "label": "ogRemaining",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:68"
+          },
+          {
+            "label": "testnetRemaining",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:69"
+          },
+          {
+            "label": "blockchainRemaining",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:70"
+          },
+          {
+            "label": "feePerc",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:72"
+          },
+          {
+            "label": "maxCapInUSD",
+            "offset": 0,
+            "slot": "20",
+            "type": "t_uint256",
+            "contract": "DerpAirdrop",
+            "src": "contracts/DerpAirdrop.sol:73"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20Upgradeable)246": {
+            "label": "contract IERC20Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IxDerp)2155": {
+            "label": "contract IxDerp",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(UserInfo)2200_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct DerpAirdrop.UserInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(UserInfo)2200_storage)": {
+            "label": "mapping(uint256 => struct DerpAirdrop.UserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(UserInfo)2200_storage": {
+            "label": "struct DerpAirdrop.UserInfo",
+            "members": [
+              {
+                "label": "lastClaimed",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "claimedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
           },
           "t_uint256": {
             "label": "uint256",
