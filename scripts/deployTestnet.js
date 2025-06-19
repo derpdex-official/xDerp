@@ -6,7 +6,7 @@ const maxRedeemRatio = "100"
 const minRedeemDuration = "30" //"2073600"
 const maxRedeemDuration = "120" //8294400"
 
-const DerpAddress = ""
+const DerpAddress = "0xE564Cc37FbAb4B4b71BD76AD8EB0AF6726B6b7D2"
 
 async function main() {
     const [deployer] = await ethers.getSigners();

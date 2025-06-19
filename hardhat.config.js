@@ -42,7 +42,12 @@ module.exports = {
       url: `https://rpc.ankr.com/bsc`,
       accounts: [process.env.deployer_priv_key],
       chainId: 56
-    }
+    },
+    goerli: {
+      url: `https://rpc.ankr.com/eth_goerli`,
+      accounts: [process.env.deployer_priv_key],
+      chainId: 5
+    },
   },
   etherscan: {
     apiKey: {
@@ -51,7 +56,8 @@ module.exports = {
       opBnbTestnet: process.env.opBNB_API_KEY,
       opBnb: process.env.opBNB_API_KEY,
       ethereum: process.env.ETHERSCAN_API_KEY,
-      bsc: process.env.BSCSCAN_API_KEY
+      bsc: process.env.BSCSCAN_API_KEY,
+      goerli: process.env.ETHERSCAN_API_KEY,
     },
     customChains: [
       {
@@ -98,6 +104,14 @@ module.exports = {
         urls: {
           apiURL: `https://api.bscscan.com/api`,
           browserURL: "https://bscscan.com"
+        }
+      },
+      {
+        network: 'goerli',
+        chainId: 5,
+        urls: {
+          apiURL: `https://api-goerli.etherscan.io/api`,
+          browserURL: "https://goerli.etherscan.io"
         }
       }
     ]
